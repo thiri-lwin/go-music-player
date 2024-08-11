@@ -1,1 +1,1 @@
-## Simple music player in GO using linked lint
+- Simple music player in GO using linked list
