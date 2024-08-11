@@ -3,15 +3,17 @@ package main
 import "fmt"
 
 type song struct {
-	name   string
-	artist string
-	next   *song
+	name     string
+	artist   string
+	next     *song
+	previous *song
 }
 
 type playlist struct {
 	name       string
 	head       *song
 	nowPlaying *song
+	tail       *song
 }
 
 func createPlaylist(name string) *playlist {
@@ -27,15 +29,22 @@ func (p *playlist) startPlaying() {
 func (p playlist) currentSong() {
 	fmt.Printf("%+v\n", p.nowPlaying)
 }
-func (p *playlist) skip() {
+func (p *playlist) forward() {
 	if p.nowPlaying == nil {
-		p.nowPlaying = p.head
+		p.startPlaying()
 		return
 	}
 
-	nowPlaying := p.nowPlaying
-	nowPlaying = nowPlaying.next
-	p.nowPlaying = nowPlaying
+	p.nowPlaying = p.nowPlaying.next
+}
+
+func (p *playlist) backward() {
+	if p.nowPlaying == nil {
+		p.startPlaying()
+		return
+	}
+
+	p.nowPlaying = p.nowPlaying.previous
 }
 
 func (p *playlist) addSong(name string, artist string) error {
@@ -46,14 +55,13 @@ func (p *playlist) addSong(name string, artist string) error {
 
 	if p.head == nil {
 		p.head = newSong
+		p.tail = newSong
 	} else {
-		currentSong := p.head
-		for currentSong.next != nil {
-			currentSong = currentSong.next
-		}
+		currentSong := p.tail
 		currentSong.next = newSong
+		newSong.previous = p.tail
 	}
-
+	p.tail = newSong
 	return nil
 }
 
@@ -76,6 +84,7 @@ func main() {
 	p.showAllSongs()
 	p.addSong("All Too Well", "Taylor Swift")
 	p.addSong("Enchanted", "Taylor Swift")
+	p.addSong("August", "Taylor Swift")
 	p.showAllSongs()
 
 	fmt.Println("start playing")
@@ -83,7 +92,11 @@ func main() {
 	fmt.Print("now playing :")
 	p.currentSong()
 
-	p.skip()
+	p.forward()
+	fmt.Print("now playing :")
+	p.currentSong()
+
+	p.backward()
 	fmt.Print("now playing :")
 	p.currentSong()
 }
